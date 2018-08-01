@@ -1,0 +1,49 @@
+-- This file has been generated from package.yaml by hpack version 0.20.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 7d793c87b415df15d7691301364cdf001735bcf1cc8314b8afbdd969a4e21ca1
+
+name:           movies-contest
+version:        0.1.0.0
+category:       Test
+homepage:       https://github.com/jproyo/movies-contest#readme
+author:         Juan Pablo Royo Sales
+maintainer:     juanpablo.royo@gmail.com
+copyright:      Juan Pablo Royo Sales
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+
+extra-source-files:
+    README.md
+
+library
+  hs-source-dirs:
+      src
+  default-extensions: OverloadedStrings
+  ghc-options: -fshow-hole-constraints -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wno-unticked-promoted-constructors
+  build-depends:
+      base >=4.7 && <5
+    , text
+  exposed-modules:
+      Main
+      MovieContest
+  other-modules:
+      Paths_movies_contest
+  default-language: Haskell2010
+
+executable movies-contest
+  main-is: Main.hs
+  hs-source-dirs:
+      src
+  default-extensions: OverloadedStrings
+  ghc-options: -fshow-hole-constraints -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wno-unticked-promoted-constructors
+  build-depends:
+      base >=4.7 && <5
+    , text
+  other-modules:
+      MovieContest
+      Paths_movies_contest
+  default-language: Haskell2010

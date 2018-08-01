@@ -1,0 +1,37 @@
+name:                movies-contest
+version:             0.1.0.0
+#synopsis:
+#description:
+homepage:            https://github.com/jproyo/movies-contest#readme
+license:             BSD3
+author:              Juan Pablo Royo Sales
+maintainer:          juanpablo.royo@gmail.com
+copyright:           Juan Pablo Royo Sales
+category:            Test
+extra-source-files:
+- README.md
+
+ghc-options:
+  - -fshow-hole-constraints
+  - -Wall
+  - -Wcompat
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wredundant-constraints
+  - -Wno-unticked-promoted-constructors
+
+dependencies:
+  - base >= 4.7 && < 5
+  - text
+
+default-extensions:
+  - OverloadedStrings
+
+library:
+  source-dirs:
+      - src
+
+executables:
+  movies-contest:
+    source-dirs:      src
+    main:             Main.hs
