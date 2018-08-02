@@ -2,12 +2,12 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e15d544c92e4cd75bff6d79c8b280637656e307fa40a0dfef8d8f10cd3a49fef
+-- hash: 7c835e20b6c0ae653defae1ea861d275d2365e158f3eb33a3cd712d144fd8068
 
-name:           movies-contest
+name:           movie-contest
 version:        0.1.0.0
 category:       Test
-homepage:       https://github.com/jproyo/movies-contest#readme
+homepage:       https://github.com/jproyo/movie-contest#readme
 author:         Juan Pablo Royo Sales
 maintainer:     juanpablo.royo@gmail.com
 copyright:      Juan Pablo Royo Sales
@@ -43,10 +43,10 @@ library
       MovieContest
       OmdbAdapter
   other-modules:
-      Paths_movies_contest
+      Paths_movie_contest
   default-language: Haskell2010
 
-executable movies-contest
+executable movie-contest
   main-is: Main.hs
   hs-source-dirs:
       app
@@ -71,7 +71,7 @@ executable movies-contest
       Model
       MovieContest
       OmdbAdapter
-      Paths_movies_contest
+      Paths_movie_contest
   default-language: Haskell2010
 
 test-suite spec
@@ -103,5 +103,5 @@ test-suite spec
       MovieContest
       OmdbAdapter
       MovieContestSpec
-      Paths_movies_contest
+      Paths_movie_contest
   default-language: Haskell2010
