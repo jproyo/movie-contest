@@ -1,40 +1,46 @@
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE QuasiQuotes           #-}
-{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE AllowAmbiguousTypes        #-}
+{-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE UndecidableInstances       #-}
 
 module MovieContest (
       showResult
     , executeContest
 ) where
 
+import           Adapter
+import           Config
 import           Control.Lens
-import           Control.Monad       (unless)
-import           Control.Monad.State (StateT, execStateT, get, lift, modify)
-import           Data.List           (find)
-import           Data.Maybe          (maybe)
-import           Data.Monoid         ((<>))
+import           Control.Monad          (unless)
+import           Control.Monad.IO.Class (MonadIO, liftIO)
+import           Control.Monad.Reader   (MonadReader, ReaderT, runReaderT)
+import           Control.Monad.State    (MonadState, StateT, execStateT, get,
+                                         modify)
+import           Data.Foldable          (foldMap)
+import           Data.List              (length, sortOn)
+import           Data.Maybe             (maybe)
+import           Data.Monoid            ((<>))
+import           Data.Text              (Text)
+import           Data.Text.IO           (getLine)
+import           Model
+import           OmdbAdapter
+import           Prelude                hiding (getLine)
 
-newtype Guess = Guess { term :: String }
+newtype Guess = Guess { term :: Text }
 
 deriving instance Show Guess
 
-data Movie = Movie { name :: String, desc :: String }
-    deriving (Show, Eq, Ord)
-
-newtype GuessedMovies = GuessedMovies [Movie]
-    deriving (Show)
-
-addMovie :: Movie -> GuessedMovies -> GuessedMovies
-addMovie m (GuessedMovies ms) = GuessedMovies (m : ms)
-
+type GuessedMovies = [Movie]
 
 data Winner = User | Machine
     deriving (Show, Eq)
 
 data PlayState = PlayState {
-      _tries         :: Int
-    , _guessedMovies :: GuessedMovies
+      _guessedMovies :: GuessedMovies
     , _winner        :: Winner }
     deriving (Show)
 
@@ -42,62 +48,82 @@ makeLenses ''PlayState
 
 initialState :: PlayState
 initialState = PlayState
-    {_tries = 0, _guessedMovies = GuessedMovies [], _winner = Machine }
+    {_guessedMovies = [], _winner = Machine }
+
+showMovie :: Movie -> String
+showMovie m = m^.title <> " from " <> show (m^.year) <> "\n"
 
 showMovies :: PlayState -> String
-showMovies p = show $ p^.guessedMovies
+showMovies = foldMap showMovie . sortOn (^. year) . (^. guessedMovies)
 
 showResult :: PlayState -> String
-showResult p = showWinner p <> "The movies I knew about: " <> showMovies p
+showResult p = showWinner p <> "\nThe movies I knew about: \n" <> showMovies p
 
 showWinner :: PlayState -> String
-showWinner (PlayState _ _ Machine) = "I win!\n"
-showWinner (PlayState _ _ User)    = "I'm beaten. I don't know that movie.\n"
+showWinner (PlayState _ Machine) = "\nI win!\n"
+showWinner (PlayState _ User)    = "I'm beaten. I don't know that movie.\n"
 
-updateMovie :: Movie -> MovieContestApp
-updateMovie m = modify (over guessedMovies (addMovie m))
-
-updateTries :: MovieContestApp
-updateTries = modify (over tries (+1))
-
-updateWinner :: Winner -> MovieContestApp
-updateWinner w = modify (set winner w)
+showMovieFound :: Movie -> String
+showMovieFound m = "I know it: " <> m^.title <> "\n" <> m^.plot
 
 finish :: PlayState -> Bool
-finish s = s^.tries == 3 || s^.winner == User
+finish (PlayState _ User)          = True
+finish (PlayState guessed Machine) = length guessed == 3
 
-beaten :: MovieContestApp
+updateMovie :: Movie -> MovieContestApp ()
+updateMovie m = modify (over guessedMovies ((:) m))
+
+updateWinner :: Winner -> MovieContestApp ()
+updateWinner w = modify (set winner w)
+
+beaten :: MovieContestApp ()
 beaten = updateWinner User
 
-found :: Movie -> MovieContestApp
-found movie =
-    lift (putStrLn $ "I know it: " <> show movie) >> updateMovie movie
+found :: Movie -> MovieContestApp ()
+found movie = do
+    liftIO $ putStrLn (showMovieFound movie)
+    updateMovie movie
 
-tryGuess :: String -> MovieContestApp
-tryGuess gs = maybe beaten found (searchMovie gs)
 
-type MovieContestApp = StateT PlayState IO ()
+instance MovieSearcher MovieContestApp  where
+    search = searchTitleOmdb
 
-play :: MovieContestApp
+tryGuess :: Text -> MovieContestApp ()
+tryGuess gs = do
+    result <- search gs
+    maybe beaten found result
+
+newtype MovieContestApp a = MovieContestApp {
+      runContest :: ReaderT Config (StateT PlayState IO) a
+    } deriving (MonadIO, MonadReader Config, MonadState PlayState)
+
+deriving instance Functor MovieContestApp
+deriving instance Monad MovieContestApp
+deriving instance Applicative MovieContestApp
+
+play :: MovieContestApp ()
 play = do
-    lift $ putStrLn "Name a movie"
-    lift getLine >>= tryGuess >> updateTries
+    liftIO $ putStrLn "\nName a movie"
+    liftIO getLine >>= tryGuess
     state <- get
     unless (finish state) play
 
 
 executeContest :: IO PlayState
-executeContest = execStateT play initialState
+executeContest = do
+    putStrLn "I bet you can't tell me a movie I don't know in 3 tries!"
+    conf <- getConfig
+    execStateT (runReaderT (runContest play) conf) initialState
 
 
 --Testing
-movies :: [Movie]
-movies = [ Movie {name = "movie a", desc = "desc a"}
-        , Movie {name = "movie b", desc = "desc b"}
-        , Movie {name = "movie c", desc = "desc c"}
-        , Movie {name = "movie d", desc = "desc d"}
-        , Movie {name = "movie e", desc = "desc e"}
-        , Movie {name = "movie f", desc = "desc f"} ]
-
-searchMovie :: String -> Maybe Movie
-searchMovie t = find ((t ==) . name) movies
+-- movies :: [Movie]
+-- movies = [ Movie {_title = "movie a", _plot = "desc a", _year = 1997}
+--         , Movie {_title = "movie b", _plot = "desc b", _year = 1997}
+--         , Movie {_title = "movie c", _plot = "desc c", _year = 1997}
+--         , Movie {_title = "movie d", _plot = "desc d", _year = 1997}
+--         , Movie {_title = "movie e", _plot = "desc e", _year = 1997}
+--         , Movie {_title = "movie f", _plot = "desc f", _year = 1997} ]
+--
+-- searchMovie :: String -> Maybe Movie
+-- searchMovie t = find ((t ==) . _title) movies

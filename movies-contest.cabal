@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d060c4e57b03ffeea5f90d488d4fac95ac0ab7e278c1f329bd51f26a7500d0a3
+-- hash: 0e51a5507931e3cf328cbdc8346a15c28483928856a98b2310b654ab253a7857
 
 name:           movies-contest
 version:        0.1.0.0
@@ -25,12 +25,23 @@ library
   default-extensions: OverloadedStrings StandaloneDeriving
   ghc-options: -fshow-hole-constraints -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wno-unticked-promoted-constructors
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , either
+    , exceptions
+    , http-client
+    , http-conduit
+    , http-types
     , lens
     , mtl
     , text
   exposed-modules:
+      Adapter
+      Config
+      Model
       MovieContest
+      OmdbAdapter
   other-modules:
       Paths_movies_contest
   default-language: Haskell2010
@@ -43,11 +54,56 @@ executable movies-contest
   default-extensions: OverloadedStrings StandaloneDeriving
   ghc-options: -fshow-hole-constraints -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wno-unticked-promoted-constructors
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , either
+    , exceptions
+    , http-client
+    , http-conduit
+    , http-types
     , lens
     , mtl
     , text
   other-modules:
+      Adapter
+      Config
+      Model
       MovieContest
+      OmdbAdapter
+      Paths_movies_contest
+  default-language: Haskell2010
+
+test-suite spec
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs:
+      src
+      test
+  default-extensions: OverloadedStrings StandaloneDeriving
+  ghc-options: -fshow-hole-constraints -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wno-unticked-promoted-constructors -threaded -O2 -rtsopts -with-rtsopts=-N
+  build-depends:
+      QuickCheck
+    , aeson
+    , base >=4.7 && <5
+    , bytestring
+    , either
+    , exceptions
+    , hspec ==2.*
+    , hspec-expectations-lifted
+    , hspec-wai
+    , hspec-wai-json
+    , http-client
+    , http-conduit
+    , http-types
+    , lens
+    , mtl
+    , text
+  other-modules:
+      Adapter
+      Config
+      Model
+      MovieContest
+      OmdbAdapter
       Paths_movies_contest
   default-language: Haskell2010

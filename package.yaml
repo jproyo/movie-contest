@@ -21,7 +21,14 @@ ghc-options:
   - -Wno-unticked-promoted-constructors
 
 dependencies:
+  - aeson
   - base >= 4.7 && < 5
+  - bytestring
+  - either
+  - exceptions
+  - http-client
+  - http-conduit
+  - http-types
   - lens
   - mtl
   - text
@@ -40,3 +47,25 @@ executables:
         - app
         - src
     main:             Main.hs
+
+
+tests:
+  spec:
+    main: Spec.hs
+    source-dirs:
+      - src
+      - test
+    ghc-options:
+      - -threaded
+      - -O2
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - aeson
+      - hspec == 2.*
+      - hspec-expectations-lifted
+      - hspec-wai
+      - hspec-wai-json
+      - http-types
+      - mtl
+      - QuickCheck
