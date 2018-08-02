@@ -2,7 +2,6 @@ module MovieContestSpec (spec) where
 
 import           Adapter
 import           Config
-import           Control.Monad
 import           Control.Monad.Reader (runReaderT)
 import           Control.Monad.State  (execStateT)
 import           Data.List
@@ -41,11 +40,13 @@ spec = describe "tryGuess using mocking for omdbapi" $ do
         userWin state `shouldBe` True
         finish state `shouldBe` True
         case state of
-            PlayState _ xs _ -> xs `shouldSatisfy` ((2==) . length)
-            _                -> expectationFailure "Should have 2 movie and Machine wins"
+            PlayState _ xs User -> xs `shouldSatisfy` ((2==) . length)
+            _                   -> expectationFailure "Should have 2 movie and Machine wins"
 
+initialNotFound :: PlayState
 initialNotFound = initialStateWithHandler handlerMockNotFound
 
+initialFound :: PlayState
 initialFound = initialStateWithHandler handlerMockFound
 
 handlerMockNotFound :: AdapterHandler
