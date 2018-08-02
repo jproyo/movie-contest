@@ -64,8 +64,4 @@ tests:
       - aeson
       - hspec == 2.*
       - hspec-expectations-lifted
-      - hspec-wai
-      - hspec-wai-json
-      - http-types
       - mtl
-      - QuickCheck

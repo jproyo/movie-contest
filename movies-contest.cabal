@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0e51a5507931e3cf328cbdc8346a15c28483928856a98b2310b654ab253a7857
+-- hash: e15d544c92e4cd75bff6d79c8b280637656e307fa40a0dfef8d8f10cd3a49fef
 
 name:           movies-contest
 version:        0.1.0.0
@@ -83,16 +83,13 @@ test-suite spec
   default-extensions: OverloadedStrings StandaloneDeriving
   ghc-options: -fshow-hole-constraints -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wno-unticked-promoted-constructors -threaded -O2 -rtsopts -with-rtsopts=-N
   build-depends:
-      QuickCheck
-    , aeson
+      aeson
     , base >=4.7 && <5
     , bytestring
     , either
     , exceptions
     , hspec ==2.*
     , hspec-expectations-lifted
-    , hspec-wai
-    , hspec-wai-json
     , http-client
     , http-conduit
     , http-types
@@ -105,5 +102,6 @@ test-suite spec
       Model
       MovieContest
       OmdbAdapter
+      MovieContestSpec
       Paths_movies_contest
   default-language: Haskell2010
