@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7d793c87b415df15d7691301364cdf001735bcf1cc8314b8afbdd969a4e21ca1
+-- hash: d060c4e57b03ffeea5f90d488d4fac95ac0ab7e278c1f329bd51f26a7500d0a3
 
 name:           movies-contest
 version:        0.1.0.0
@@ -22,13 +22,14 @@ extra-source-files:
 library
   hs-source-dirs:
       src
-  default-extensions: OverloadedStrings
+  default-extensions: OverloadedStrings StandaloneDeriving
   ghc-options: -fshow-hole-constraints -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wno-unticked-promoted-constructors
   build-depends:
       base >=4.7 && <5
+    , lens
+    , mtl
     , text
   exposed-modules:
-      Main
       MovieContest
   other-modules:
       Paths_movies_contest
@@ -37,11 +38,14 @@ library
 executable movies-contest
   main-is: Main.hs
   hs-source-dirs:
+      app
       src
-  default-extensions: OverloadedStrings
+  default-extensions: OverloadedStrings StandaloneDeriving
   ghc-options: -fshow-hole-constraints -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wno-unticked-promoted-constructors
   build-depends:
       base >=4.7 && <5
+    , lens
+    , mtl
     , text
   other-modules:
       MovieContest

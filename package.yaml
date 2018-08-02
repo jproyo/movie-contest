@@ -22,10 +22,13 @@ ghc-options:
 
 dependencies:
   - base >= 4.7 && < 5
+  - lens
+  - mtl
   - text
 
 default-extensions:
   - OverloadedStrings
+  - StandaloneDeriving
 
 library:
   source-dirs:
@@ -33,5 +36,7 @@ library:
 
 executables:
   movies-contest:
-    source-dirs:      src
+    source-dirs:
+        - app
+        - src
     main:             Main.hs
