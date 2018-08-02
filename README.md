@@ -65,7 +65,7 @@ bash.$ stack test
 
 ```shell
 bash.$ stack build
-bash.$ OMDB_API_KEY=XXXX stack exec movies-contest
+bash.$ OMDB_API_KEY=XXXX stack exec movie-contest
 ```
 
 *where XXXX is your OMDB API KEY*

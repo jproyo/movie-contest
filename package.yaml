@@ -1,8 +1,8 @@
-name:                movies-contest
+name:                movie-contest
 version:             0.1.0.0
 #synopsis:
 #description:
-homepage:            https://github.com/jproyo/movies-contest#readme
+homepage:            https://github.com/jproyo/movie-contest#readme
 license:             BSD3
 author:              Juan Pablo Royo Sales
 maintainer:          juanpablo.royo@gmail.com
@@ -42,7 +42,7 @@ library:
       - src
 
 executables:
-  movies-contest:
+  movie-contest:
     source-dirs:
         - app
         - src
