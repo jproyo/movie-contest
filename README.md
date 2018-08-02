@@ -75,8 +75,15 @@ bash.$ OMDB_API_KEY=XXXX stack exec movie-contest
 
 You need to have Docker 1.8+ installed in your host machine
 
+1. If you dont have docker stackage machine pulled first you need to pull from dockerhub
+
+```shell
+bash.$ stack docker pull
+```
+
+2. Once this is done you can repeat the following recipe to build and run in a docker container the solution
+
 ```shell
 bash.$ stack --docker build
-bash.$ stack docker pull
-
+bash.$ OMDB_API_KEY=XXXX stack --docker exec movie-contest
 ```
