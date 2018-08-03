@@ -85,5 +85,7 @@ bash.$ stack docker pull
 
 ```shell
 bash.$ stack --docker build
-bash.$ OMDB_API_KEY=XXXX stack --docker exec movie-contest
+bash.$ stack --docker --docker-env OMDB_API_KEY=XXXX exec movie-contest
 ```
+
+*where XXXX is your OMDB API KEY*
