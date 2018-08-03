@@ -5,6 +5,7 @@ import           Config
 import           Control.Monad.Reader (runReaderT)
 import           Control.Monad.State  (execStateT)
 import           Data.List
+import           Data.Maybe
 import           Data.Text            (Text, pack)
 import           Model
 import           MovieContest
@@ -14,34 +15,28 @@ spec :: Spec
 spec = describe "tryGuess using mocking for omdbapi" $ do
     it "user should win because movie not found" $ do
         conf <- getConfig
-        state <- execStateT
+        (PlayState _ xs _)  <- execStateT
             (runReaderT (runContest $ tryGuess "some movie not found") conf)
             initialNotFound
-        userWin state `shouldBe` True
+        catMaybes xs `shouldSatisfy` ((0==) . length)
     it "movie should be stored on state because movie found" $ do
         conf <- getConfig
-        state <- execStateT
+        (PlayState _ xs _)  <- execStateT
             (runReaderT (runContest $ tryGuess "movie e") conf)
             initialFound
-        case state of
-            PlayState _ xs Machine -> xs `shouldSatisfy` ((1==) . length)
-            _                      -> expectationFailure "Should have 1 movie and Machine wins"
+        catMaybes xs `shouldSatisfy` ((1==) . length)
     it "machine should win because 3 attemps found" $ do
         conf <- getConfig
-        state <- execStateT
+        (PlayState _ xs _)  <- execStateT
             (runReaderT (runContest $ sequence [tryGuess "movie e" , tryGuess "movie a" , tryGuess "movie c"]) conf)
             initialFound
-        finish state `shouldBe` True
+        catMaybes xs `shouldSatisfy` ((3==) . length)
     it "user should win because 2 attemps ok and after that failed" $ do
         conf <- getConfig
-        state <- execStateT
+        (PlayState _ xs _)  <- execStateT
             (runReaderT (runContest $ sequence [tryGuess "movie e" , tryGuess "movie a" , tryGuess "movie z"]) conf)
             initialFound
-        userWin state `shouldBe` True
-        finish state `shouldBe` True
-        case state of
-            PlayState _ xs User -> xs `shouldSatisfy` ((2==) . length)
-            _                   -> expectationFailure "Should have 2 movie and Machine wins"
+        catMaybes xs `shouldSatisfy` ((2==) . length)
 
 initialNotFound :: PlayState
 initialNotFound = initialStateWithHandler handlerMockNotFound

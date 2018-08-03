@@ -13,7 +13,6 @@ module MovieContest (
     , initialState
     , initialStateWithHandler
     , tryGuess
-    , userWin
     , finish
     , MovieContestApp(..)
     , PlayState(..)
@@ -30,7 +29,7 @@ import           Control.Monad.State    (MonadState, StateT, execStateT, get,
                                          modify)
 import           Data.Foldable          (foldMap)
 import           Data.List              (length, sortOn)
-import           Data.Maybe             (maybe)
+import           Data.Maybe             (catMaybes)
 import           Data.Monoid            ((<>))
 import           Data.Text              (Text)
 import           Data.Text.IO           (getLine)
@@ -38,7 +37,7 @@ import           Model
 import qualified OmdbAdapter            as Omdb
 import           Prelude                hiding (getLine)
 
-type GuessedMovies = [Movie]
+type GuessedMovies = [Maybe Movie]
 
 data Winner = User | Machine
     deriving (Show, Eq)
@@ -68,8 +67,13 @@ initialStateWithHandler handler = PlayState
 showMovie :: Movie -> String
 showMovie m = m^.title <> " from " <> show (m^.year) <> "\n"
 
+sortedMoviesResult :: PlayState -> [Movie]
+sortedMoviesResult = sortOn (^. year) . catMaybes . (^. guessedMovies)
+
 showMovies :: PlayState -> String
-showMovies = foldMap showMovie . sortOn (^. year) . (^. guessedMovies)
+showMovies = showMovies_ . sortedMoviesResult
+    where showMovies_ [] = "Anything :( :("
+          showMovies_ xs = foldMap showMovie xs
 
 showResult :: PlayState -> String
 showResult p = showWinner p <> "\nThe movies I knew about: \n" <> showMovies p
@@ -81,15 +85,11 @@ showWinner (PlayState _ _ User)    = "I'm beaten. I don't know that movie.\n"
 showMovieFound :: Movie -> String
 showMovieFound m = "I know it: " <> m^.title <> "\n" <> m^.plot
 
-userWin :: PlayState -> Bool
-userWin (PlayState _ _ User) = True
-userWin _                    = False
-
 finish :: PlayState -> Bool
 finish (PlayState _ _ User)          = True
-finish (PlayState _ guessed Machine) = length guessed == 3
+finish (PlayState _ guessed Machine) = (length . catMaybes) guessed == 3
 
-updateMovie :: Movie -> MovieContestApp ()
+updateMovie :: Maybe Movie -> MovieContestApp ()
 updateMovie m = modify (over guessedMovies ((:) m))
 
 updateWinner :: Winner -> MovieContestApp ()
@@ -98,23 +98,24 @@ updateWinner w = modify (set winner w)
 beaten :: MovieContestApp ()
 beaten = updateWinner User
 
-found :: Movie -> MovieContestApp ()
-found movie = do
-    liftIO $ putStrLn (showMovieFound movie)
-    updateMovie movie
+updateGuessed :: GuessedMovies -> MovieContestApp ()
+updateGuessed (Just m : _)  = liftIO $ putStrLn (showMovieFound m)
+updateGuessed (Nothing : _) = beaten
+updateGuessed _             = return ()
 
 tryGuess :: Text -> MovieContestApp ()
 tryGuess gs = do
     state <- get
     conf <- ask
     result <- liftIO $ runSearch (state^.adapter) conf gs
-    maybe beaten found result
+    updateMovie result
 
 
 play :: MovieContestApp ()
 play = do
     liftIO $ putStrLn "\nName a movie"
     liftIO getLine >>= tryGuess
+    get >>= \s -> updateGuessed $ s^.guessedMovies
     state <- get
     unless (finish state) play
 
